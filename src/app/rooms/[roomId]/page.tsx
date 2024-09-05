@@ -3,7 +3,6 @@
 
 import React from 'react';
 import Editor from '@/app/components/Editor';
-import RoomHeader from '@/app/components/RoomHeader';
 import { useRoom } from '@liveblocks/react';
 
 type Props = {
@@ -17,7 +16,6 @@ const RoomPage = ({ params }: Props) => {
 
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e]">
-      <RoomHeader  isOwner={true} roomName="Untitled" roomId={params.roomId} />
       <main className="flex-1 overflow-hidden">
         <Editor isOwner={true} roomId={params.roomId} />
       </main>
