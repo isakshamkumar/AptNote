@@ -1,0 +1,36 @@
+/* /app/css/editor-custom.css */
+.bn-container {
+    border-left: 2px solid var(--border-color);
+  }
+  
+  .bn-editor [data-slate-placeholder] {
+    color: var(--placeholder-color) !important;
+  }
+  
+  .bn-editor [data-slate-cursor] {
+    border-color: currentColor !important;
+  }
+  
+  .bn-menu button:hover {
+    background-color: var(--menu-hover-color) !important;
+  }
+  
+  /* Increase the width of the editor content */
+  .bn-container .slate-BlockNoteEditor {
+    max-width: 900px !important;
+    margin: 0 auto;
+  }
+  
+  /* Light theme variables */
+  .bg-gray-100 {
+    --border-color: #cccccc;
+    --placeholder-color: #888888;
+    --menu-hover-color: #e0e0e0;
+  }
+  
+  /* Dark theme variables */
+  /* .bg-[#1e1e1e] {
+    --border-color: #444444;
+    --placeholder-color: #888888;
+    --menu-hover-color: #333333;
+  } */
