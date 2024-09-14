@@ -1,7 +1,6 @@
 import LiveblocksProviderLayout from '@/app/components/Providers/live-block-provider'
 import RoomProviderLayout from '@/app/components/Providers/RoomProvider'
-import { ThemeProvider } from '@/app/context/ThemeContext'
-import { RoomProvider } from '@liveblocks/react'
+import { ThemeAndSidebarProvider } from '@/app/context/ThemeContext'
 import React from 'react'
 
 type Props = {
@@ -14,12 +13,12 @@ type Props = {
 const layout = ({ children,params }: Props) => {
   return (
     <LiveblocksProviderLayout>
-<ThemeProvider>
+{/* <ThemeAndSidebarProvider> */}
 
    <RoomProviderLayout roomId={params.roomId} >
     {children}
    </RoomProviderLayout>
-</ThemeProvider>
+{/* </ThemeAndSidebarProvider> */}
     </LiveblocksProviderLayout>
   )
 }

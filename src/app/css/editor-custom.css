@@ -93,3 +93,26 @@
     transform: scale(1.2, 1);
   }
 }
+/* editor-custom.css */
+
+/* Dark Mode */
+.bg-dark {
+  background-color: #1e1e1e; /* Deep charcoal background */
+}
+
+.text-light {
+  color: #f0f0f0; /* Light gray text */
+}
+
+.border-dark {
+  border-color: #2a2a2a; /* Slightly lighter border for dark mode */
+}
+
+.button-dark {
+  background-color: #333333; /* Darker button background */
+  color: #f0f0f0; /* Light button text */
+}
+
+.button-dark:hover {
+  background-color: #444444; /* Slightly lighter on hover */
+}

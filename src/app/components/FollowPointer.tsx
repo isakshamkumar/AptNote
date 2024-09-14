@@ -24,18 +24,15 @@ const FollowPointer: React.FC<FollowPointerProps> = ({info,x,y}) => {
    initial={{
      scale: 1,
      opacity: 1,
-    //  backgroundColor: color,
    }}
    animate={{
      scale: 1,
      opacity: 1,
-    //  backgroundColor: color,
    }}
    exit={
      {
        scale: 0,
        opacity: 0,
-       //  backgroundColor: color,
      }
    }
     >

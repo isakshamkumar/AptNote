@@ -1,85 +1,170 @@
 "use client"
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { Plus, FileText, Users, Clock, Share2, Search, Menu, X, Home, Settings, HelpCircle, ChevronDown, Command } from 'lucide-react';
-const RoomsPage = () => {
-  type UserRooms= {
-    id: number;
-    name: string;
-    lastEdited: string;
-    collaborators: number;
-    access: string;
-}[]
-  const [rooms, setRooms] = useState<UserRooms>([
-    { id: 1, name: "Project Brainstorm", lastEdited: "2 hours ago", collaborators: 3, access: "owner" },
-    { id: 2, name: "Meeting Notes", lastEdited: "Yesterday", collaborators: 2, access: "editor" },
-    { id: 3, name: "Product Roadmap", lastEdited: "3 days ago", collaborators: 5, access: "viewer" },
-  ]);
+import React, { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { FileText, Users, Calendar, Search, PlusCircle, ExternalLink, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { supabase } from "../lib/initSupabase";
+import { useThemeAndSidebar } from "../context/ThemeContext";
+import { Button } from "@/components/ui/button";
 
-  const RoomCard = ({ room}:{room:{
-    id: number;
-    name: string;
-    lastEdited: string;
-    collaborators: number;
-    access: string;
-}}) => (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 hover:shadow-md transition duration-300 ease-in-out">
-      <div className="flex justify-between items-start mb-4">
-        <FileText className="w-8 h-8 text-blue-500" />
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-            <Clock className="w-4 h-4 mr-1" />
-            {room.lastEdited}
-          </span>
-          <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition duration-300">
-            <Share2 className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">{room.name}</h3>
-      <div className="flex justify-between items-center text-gray-600 dark:text-gray-300">
+type Room = {
+  id: string;
+  userId: string;
+  Name: string | null;
+  Description: string | null;
+  created_at: string;
+  Members: string[];
+  Admins: string[];
+};
+
+const RoomsPage = () => {
+  const [myRooms, setMyRooms] = useState<Room[]>([]);
+  const [accessedRooms, setAccessedRooms] = useState<Room[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+  const { user } = useUser();
+  const { theme, isCollapsed } = useThemeAndSidebar();
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (user?.id && user?.primaryEmailAddress?.emailAddress) {
+        const userEmail = user.primaryEmailAddress.emailAddress;
+
+        // Fetch rooms created by the user
+        const { data: createdRooms, error: createdError } = await supabase
+          .from("Rooms")
+          .select()
+          .eq("userId", user.id);
+
+        if (createdError) {
+          console.error("Error fetching created rooms:", createdError);
+        } else {
+          setMyRooms(createdRooms || []);
+        }
+
+        // Fetch rooms where the user is a member or admin (but not the creator)
+        const { data: memberRooms, error: memberError } = await supabase
+          .from("Rooms")
+          .select()
+          .neq("userId", user.id)
+          .or(`Members.cs.{${userEmail}},Admins.cs.{${userEmail}}`);
+
+        if (memberError) {
+          console.error("Error fetching member rooms:", memberError);
+        } else {
+          setAccessedRooms(memberRooms || []);
+        }
+      }
+    };
+
+    fetchRooms();
+  }, [user]);
+  const RoomCard = ({ room }: { room: Room }) => (
+    <div 
+      onClick={() => router.push(`/rooms/${room.id}`)}
+      className={`p-4 rounded-lg shadow-md transition-all duration-300 cursor-pointer ${
+        theme === 'dark' 
+          ? 'bg-gray-800 hover:bg-gray-700 text-gray-100' 
+          : 'bg-white hover:bg-gray-50 text-gray-800'
+      }`}
+    >
+      <h3 className="text-lg font-semibold mb-2 truncate">{room.Name}</h3>
+      <p className={`text-sm mb-4 h-12 overflow-hidden ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+        {room.Description}
+      </p>
+      <div className="flex justify-between items-center text-xs">
         <span className="flex items-center">
-          <Users className="w-4 h-4 mr-2" />
-          {room.collaborators} collaborators
+          <Users className="w-4 h-4 mr-1" />
+          {room.Members.length + room.Admins.length}
         </span>
-        <span className={`text-sm px-2 py-1 rounded-full ${
-          room.access === 'owner' ? 'bg-green-200 text-green-800' :
-          room.access === 'editor' ? 'bg-blue-200 text-blue-800' : 'bg-yellow-200 text-yellow-800'
+        <span className="flex items-center">
+          <Calendar className="w-4 h-4 mr-1" />
+          {new Date(room.created_at).toLocaleDateString()}
+        </span>
+        <span className={`px-2 py-1 rounded-full text-xs ${
+          room.userId === user?.id 
+            ? 'bg-green-200 text-green-800' 
+            : 'bg-blue-200 text-blue-800'
         }`}>
-          {room.access.charAt(0).toUpperCase() + room.access.slice(1)}
+          {room.userId === user?.id ? "Owner" : (room.Admins.includes(user?.primaryEmailAddress?.emailAddress || "") ? "Admin" : "Member")}
         </span>
       </div>
     </div>
   );
 
+  const EmptyState = ({ type }: { type: 'my' | 'accessed' }) => (
+    <div className={`text-center p-8 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-500 mb-4">
+        {type === 'my' ? <FileText size={24} /> : <ExternalLink size={24} />}
+      </div>
+      <h3 className={`text-xl font-semibold mb-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
+        {type === 'my' ? "No rooms created yet" : "No accessed rooms"}
+      </h3>
+      <p className={`mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+        {type === 'my' 
+          ? "Create your first room to start collaborating" 
+          : "You're not a member of any rooms yet"}
+      </p>
+    </div>
+  );
+
+  const RoomSection = ({ rooms, title, type }: { rooms: Room[], title: string, type: 'my' | 'accessed' }) => (
+    <section className="space-y-4">
+      <h2 className={`text-2xl font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{title}</h2>
+      {rooms.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {rooms.map((room) => (
+            <RoomCard key={room.id} room={room} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState type={type} />
+      )}
+    </section>
+  );
+
+  const filteredMyRooms = myRooms.filter((room) =>
+    room.Name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredAccessedRooms = accessedRooms.filter((room) =>
+    room.Name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-      
-
-        <main className="flex-1 px-6 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Your Rooms</h2>
+    <div 
+      className={`transition-all duration-300 ease-in-out min-h-screen overflow-x-hiddene ${
+        isCollapsed ? "sm:ml-20" : "sm:ml-64"
+      } px-6 py-8 ${
+        theme === 'dark' 
+          ? 'bg-gray-900 text-gray-100' 
+          : 'bg-gray-100 text-gray-900'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+          <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Your Rooms</h1>
+          <div className="relative w-full sm:w-64">
+            <Input
+              type="text"
+              placeholder="Search rooms..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`pl-10 pr-4 py-2 w-full rounded-full focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark' 
+                  ? 'bg-gray-800 text-gray-100 border-gray-700 focus:border-blue-400' 
+                  : 'bg-white text-gray-900 border-gray-300 focus:border-blue-500'
+              }`}
+            />
+            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
           </div>
+        </div>
 
-          {rooms.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rooms.map((room) => (
-                <RoomCard key={room.id} room={room} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-              <FileText className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold mb-2">No rooms yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">Create your first room to start collaborating</p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full flex items-center mx-auto transition duration-300">
-                <Plus className="w-5 h-5 mr-2" />
-                Create Your First Room
-              </button>
-            </div>
-          )}
-        </main>
-
-      
+        <RoomSection rooms={filteredMyRooms} title="My Rooms" type="my" />
+        <RoomSection rooms={filteredAccessedRooms} title="Accessed Rooms" type="accessed" />
+      </div>
+    </div>
   );
 };
 

@@ -7,7 +7,6 @@ import Feature from '../components/Feature';
 const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      {/* Navbar */}
      <Nav/>
    
 

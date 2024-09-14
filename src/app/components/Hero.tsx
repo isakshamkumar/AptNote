@@ -7,6 +7,15 @@ type Props = {}
 
 const Hero = (props: Props) => {
 const router= useRouter()
+
+const scrollToFeature = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  e.preventDefault();
+  const featureSection = document.getElementById('feature');
+  if (featureSection) {
+    featureSection.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
   return (
     <section className="hero relative overflow-hidden pt-24">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
@@ -26,9 +35,13 @@ const router= useRouter()
             Start writing for free
             <ArrowRight className="ml-2 h-5 w-5" />
           </button>
-          <button className="px-8 py-4 bg-white/10 hover:bg-white/20 rounded-md text-lg font-semibold transition duration-300 ease-in-out">
-            Watch demo
-          </button>
+          <a 
+              href="#feature" 
+              onClick={scrollToFeature}
+              className="px-8 py-4 bg-white/10 hover:bg-white/20 rounded-md text-lg font-semibold transition duration-300 ease-in-out"
+            >
+              Watch demo
+            </a>
         </div>
       </div>
     </div>
