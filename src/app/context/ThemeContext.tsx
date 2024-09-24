@@ -20,7 +20,6 @@ export const ThemeAndSidebarProvider: React.FC<{ children: ReactNode }> = ({ chi
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    // Initialize sidebar state based on screen size
     const handleResize = () => {
       if (window.innerWidth >= 640) {
         setIsSidebarOpen(true);

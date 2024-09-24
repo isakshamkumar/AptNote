@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
 
     const userEmail = user.emailAddresses[0].emailAddress;
 
-    // Check if the user is authorized for this room
     const { data: roomData, error } = await supabase
       .from("Rooms")
       .select("Admins, Members")

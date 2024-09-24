@@ -1,4 +1,3 @@
-// /components/AIAssistantModal.tsx
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,9 +13,7 @@ const AIAssistantModal = ({ isOpen, onClose }: AIAssistantModalProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement AI processing logic
     console.log('Processing prompt:', prompt);
-    // Reset prompt after submission
     setPrompt('');
   };
 

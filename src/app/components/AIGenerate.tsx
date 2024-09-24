@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { motion } from 'framer-motion';
 import { useThemeAndSidebar } from '../context/ThemeContext';
+import { generateContent } from '../actions/worker-action';
 
 type Message = {
   id: number;
@@ -15,7 +16,7 @@ type Message = {
   sender: 'user' | 'ai';
 };
 
-const AIGenerate: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }> = ({ isOpen, onClose, doc }) => {
+const AIGenerate: React.FC<{ isOpen: boolean; onClose: () => void; doc: Y.Doc }> = ({ isOpen, onClose, doc }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isCopied, setIsCopied] = useState(false);
@@ -39,21 +40,9 @@ const AIGenerate: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }>
     const documentData = doc.getXmlFragment("document-store").toJSON();
 
     startTransition(async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_BACKEND_URL}/generateContent`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify({ prompt: input, documentData })
-        });
-
-        const data = await response.json();
-        setMessages(prev => [...prev, { id: Date.now(), content: data.message, sender: 'ai' }]);
-      } catch (error) {
-        console.error('Error generating content:', error);
-        setMessages(prev => [...prev, { id: Date.now(), content: "Sorry, I couldn't generate content. Please try again.", sender: 'ai' }]);
-      } 
+      const aiResponse = await generateContent(input, documentData);
+      
+      setMessages(prev => [...prev, { id: Date.now(), content: aiResponse, sender: 'ai' as const }]);
     });
   };
 
@@ -83,8 +72,8 @@ const AIGenerate: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }>
             >
               <div className={`flex items-start space-x-2 max-w-[85%] ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                 <div className={`p-3 rounded-lg shadow-md ${
-                  message.sender === 'user' 
-                    ? 'bg-blue-500 text-white' 
+                  message.sender === 'user'
+                    ? 'bg-blue-500 text-white'
                     : theme === 'dark' ? 'bg-gray-600 text-gray-100' : 'bg-white'
                 }`}>
                   {message.sender === 'user' ? (

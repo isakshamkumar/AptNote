@@ -53,7 +53,6 @@ const Header = ({}: Props) => {
     debouncedSearch(searchTerm);
   }, [searchTerm, debouncedSearch]);
 
-  // Handle search keyboard shortcut
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
@@ -66,7 +65,6 @@ const Header = ({}: Props) => {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  // Highlight matching text
   const highlightMatch = (text: string, term: string) => {
     if (!term.trim()) return text;
     const regex = new RegExp(`(${term})`, 'gi');

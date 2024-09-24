@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm';
 import { motion } from 'framer-motion';
 import * as Y from 'yjs';
 import { useThemeAndSidebar } from '../context/ThemeContext';
+import { summarizeDocument } from '../actions/worker-action';
 
 type Message = {
   id: number;
@@ -15,7 +16,7 @@ type Message = {
   sender: 'user' | 'ai';
 };
 
-const AISummarize: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }> = ({ isOpen, onClose, doc }) => {
+const AISummarize: React.FC<{ isOpen: boolean; onClose: () => void; doc: Y.Doc }> = ({ isOpen, onClose, doc }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isCopied, setIsCopied] = useState(false);
@@ -39,21 +40,9 @@ const AISummarize: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }
     const documentData = doc.getXmlFragment("document-store").toJSON();
 
     startTransition(async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_BACKEND_URL}/summarizeDocument`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-          },
-          body: JSON.stringify({ documentData })
-        });
-        const data = await response.json();
-        setMessages(prev => [...prev, { id: Date.now(), content: data, sender: 'ai' }]);
-      } catch (error) {
-        console.error('Error summarizing document:', error);
-        setMessages(prev => [...prev, { id: Date.now(), content: "Sorry, I couldn't summarize the document. Please try again.", sender: 'ai' }]);
-      }
+      const aiResponse = await summarizeDocument(documentData);
+
+      setMessages(prev => [...prev, { id: Date.now(), content: aiResponse, sender: 'ai' as const }]);
     });
   };
 
@@ -83,8 +72,8 @@ const AISummarize: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }
             >
               <div className={`flex items-start space-x-2 max-w-[85%] ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                 <div className={`p-3 rounded-lg shadow-md ${
-                  message.sender === 'user' 
-                    ? 'bg-blue-500 text-white' 
+                  message.sender === 'user'
+                    ? 'bg-blue-500 text-white'
                     : theme === 'dark' ? 'bg-gray-600 text-gray-100' : 'bg-white'
                 }`}>
                   {message.sender === 'user' ? (

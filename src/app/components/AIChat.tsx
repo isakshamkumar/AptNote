@@ -10,6 +10,7 @@ import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeAndSidebar } from '../context/ThemeContext';
+import { chatToDocument } from '../actions/worker-action';
 
 type Message = {
   id: number;
@@ -17,7 +18,6 @@ type Message = {
   sender: 'user' | 'ai';
 };
 
-// Custom renderer for code blocks
 const CodeRenderer: React.FC<{
   language: string | undefined;
   value: string;
@@ -34,7 +34,7 @@ const CodeRenderer: React.FC<{
   );
 };
 
-const AIChat: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }> = ({ isOpen, onClose, doc }) => {
+const AIChat: React.FC<{ isOpen: boolean; onClose: () => void; doc: Y.Doc }> = ({ isOpen, onClose, doc }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,37 +47,22 @@ const AIChat: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }> = (
 
   useEffect(scrollToBottom, [messages]);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-  
+
     const userMessage = { id: Date.now(), content: input, sender: 'user' as const };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-  
+
     startTransition(async () => {
       const documentData = doc.getXmlFragment("document-store").toJSON();
+
+      const aiResponse = await chatToDocument(documentData, userMessage.content);
       
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_BACKEND_URL}/chatToDocument`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify({
-            documentData,
-            question: userMessage.content
-          })
-        });
-        
-        const data = await response.json();
-        setMessages(prev => [...prev, { id: Date.now(), content: data.message, sender: 'ai' as const }]);
-      } catch (error) {
-        console.error('Error fetching AI response:', error);
-        setMessages(prev => [...prev, { id: Date.now(), content: "Sorry, I couldn't process your request. Please try again.", sender: 'ai' as const }]);
-      }
+      setMessages(prev => [...prev, { id: Date.now(), content: aiResponse, sender: 'ai' as const }]);
     });
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -98,8 +83,8 @@ const AIChat: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }> = (
               >
                 <div className={`flex items-start space-x-2 max-w-[85%] ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                   <div className={`p-3 rounded-lg shadow-md ${
-                    message.sender === 'user' 
-                      ? 'bg-blue-500 text-white' 
+                    message.sender === 'user'
+                      ? 'bg-blue-500 text-white'
                       : theme === 'dark' ? 'bg-gray-600 text-gray-100' : 'bg-white'
                   }`}>
                     {message.sender === 'user' ? (
@@ -151,7 +136,7 @@ const AIChat: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }> = (
             className={`flex-1 ${theme === 'dark' ? 'bg-gray-700 text-gray-100 border-gray-600' : ''}`}
           />
           <Button type="submit" disabled={isLoading || !input.trim()}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spins" /> : <Send className="h-4 w-4" />}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>
       </DialogContent>

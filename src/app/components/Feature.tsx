@@ -53,7 +53,6 @@ const useCollaborativeEditing = (initialUsers: User[]) => {
               newState.cursorPositions[user.id].isTyping = false;
             }
           } else if (Math.random() > 0.95) {
-            // Occasionally remove the cursor
             delete newState.cursorPositions[user.id];
           }
         });

@@ -17,12 +17,9 @@ const Nav = (props: Props) => {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <button className="px-4 py-2 rounded-md text-sm font-medium bg-white/10 hover:bg-white/20 transition">
-            Try Demo
-          </button>
-          <button className="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 transition">
+          <Link  href={"/sign-up"} className="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 transition">
             Sign up
-          </button>
+          </Link>
         </div>
       </div>
     </div>

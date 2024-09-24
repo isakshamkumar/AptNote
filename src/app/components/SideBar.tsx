@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import Link from 'next/link'
 import { useThemeAndSidebar } from '../context/ThemeContext';
+import { createNewRoom, fetchAccessedRooms, fetchMyRooms, renameRoom } from '../actions/supabase-action'
 
 type Room = {
     id: string;
@@ -43,28 +44,11 @@ const SideBar = () => {
     useEffect(() => {
         const fetchRooms = async () => {
             if (session?.user?.id) {
-                const { data: createdRooms, error: createdError } = await supabase
-                    .from("Rooms")
-                    .select()
-                    .eq('userId', session.user.id);
-
-                if (createdError) {
-                    console.error('Error fetching created rooms:', createdError);
-                } else {
-                    setMyRooms(createdRooms);
-                }
-
-                const { data: memberRooms, error: memberError } = await supabase
-                    .from("Rooms")
-                    .select()
-                    .neq('userId', session.user.id)
-                    .or(`Members.cs.{${session.user.emailAddresses[0].emailAddress}},Admins.cs.{${session.user.emailAddresses[0].emailAddress}}`);
-
-                if (memberError) {
-                    console.error('Error fetching member rooms:', memberError);
-                } else {
-                    setAccessedRooms(memberRooms);
-                }
+                const createdRooms = await fetchMyRooms(session.user.id);
+                setMyRooms(createdRooms);
+                
+                const memberRooms = await fetchAccessedRooms(session.user.id, session.user?.emailAddresses[0].emailAddress);
+                setAccessedRooms(memberRooms);
             }
         }
         fetchRooms();
@@ -83,22 +67,11 @@ const SideBar = () => {
             }
 
             try {
-                const { data, error } = await supabase
-                    .from("Rooms")
-                    .insert({
-                        Name: newRoomName,
-                        Description: newRoomDescription,
-                        Admins: [userEmail],
-                        Members: memberEmails,
-                        userId: userId
-                    })
-                    .select();
-
-                if (error) throw error;
-
-                if (data && data[0]) {
+             
+const newRoom= await createNewRoom(newRoomName, newRoomDescription, memberEmails, userId, userEmail);
+                if (newRoom) {
                     alert("Room created");
-                    setMyRooms(prevRooms => prevRooms ? [...prevRooms, data[0]] : [data[0]]);
+                    setMyRooms(prevRooms => prevRooms ? [...prevRooms, newRoom] : [newRoom]); 
                 }
 
                 setIsNewRoomModalOpen(false);
@@ -120,12 +93,8 @@ const SideBar = () => {
 
     const handleRenameRoom = async (roomId: string, newName: string) => {
         try {
-            const { error } = await supabase
-                .from("Rooms")
-                .update({ Name: newName })
-                .eq('id', roomId);
-
-            if (error) throw error;
+   const success = await renameRoom(roomId, newName);
+            if (success) {
 
             setMyRooms(prevRooms => 
                 prevRooms?.map(room => 
@@ -138,6 +107,8 @@ const SideBar = () => {
                 ) || null
             );
             setEditingRoomId(null);
+        }
+
         } catch (error) {
             console.error('Error renaming room:', error);
         }

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { supabase } from "../lib/initSupabase";
 import { useThemeAndSidebar } from "../context/ThemeContext";
-import { Button } from "@/components/ui/button";
+import { fetchAccessedRooms, fetchMyRooms } from "../actions/supabase-action";
 
 type Room = {
   id: string;
@@ -31,30 +31,10 @@ const RoomsPage = () => {
       if (user?.id && user?.primaryEmailAddress?.emailAddress) {
         const userEmail = user.primaryEmailAddress.emailAddress;
 
-        // Fetch rooms created by the user
-        const { data: createdRooms, error: createdError } = await supabase
-          .from("Rooms")
-          .select()
-          .eq("userId", user.id);
-
-        if (createdError) {
-          console.error("Error fetching created rooms:", createdError);
-        } else {
-          setMyRooms(createdRooms || []);
-        }
-
-        // Fetch rooms where the user is a member or admin (but not the creator)
-        const { data: memberRooms, error: memberError } = await supabase
-          .from("Rooms")
-          .select()
-          .neq("userId", user.id)
-          .or(`Members.cs.{${userEmail}},Admins.cs.{${userEmail}}`);
-
-        if (memberError) {
-          console.error("Error fetching member rooms:", memberError);
-        } else {
-          setAccessedRooms(memberRooms || []);
-        }
+        const createdRooms= await fetchMyRooms(user.id);
+setMyRooms(createdRooms);
+       const memberRooms= await fetchAccessedRooms(user.id,userEmail);
+       setAccessedRooms(memberRooms);
       }
     };
 

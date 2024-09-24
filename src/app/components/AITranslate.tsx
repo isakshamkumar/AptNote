@@ -1,4 +1,3 @@
-// AITranslate.tsx
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -10,8 +9,8 @@ import remarkGfm from 'remark-gfm';
 import { motion } from 'framer-motion';
 import * as Y from 'yjs';
 import { useThemeAndSidebar } from '../context/ThemeContext';
-
-const languages = ['english', 'spanish', 'french', 'german', 'chinese', 'japanese', 'hindi'];
+import { translateDocument } from '../actions/worker-action';
+import { SupportedLanguagesToTranslate } from '../constants';
 
 type Message = {
   id: number;
@@ -45,16 +44,8 @@ const AITranslate: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }
 
     startTransition(async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_WORKER_BACKEND_URL}/translateDocument`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-          },
-          body: JSON.stringify({ documentData, targetLang: targetLanguage })
-        });
-        const data = await response.json();
-        setMessages(prev => [...prev, { id: Date.now(), content: data, sender: 'ai' }]);
+        const translatedContent = await translateDocument(documentData, targetLanguage);
+        setMessages(prev => [...prev, { id: Date.now(), content: translatedContent, sender: 'ai' }]);
       } catch (error) {
         console.error('Error translating document:', error);
         setMessages(prev => [...prev, { id: Date.now(), content: "Sorry, I couldn't translate the document. Please try again.", sender: 'ai' }]);
@@ -130,7 +121,7 @@ const AITranslate: React.FC<{ isOpen: boolean; onClose: () => void, doc: Y.Doc }
                 <SelectValue placeholder="Select target language" />
               </SelectTrigger>
               <SelectContent className={theme === 'dark' ? 'bg-gray-700 text-gray-100' : ''}>
-                {languages.map((lang) => (
+                {SupportedLanguagesToTranslate.map((lang) => (
                   <SelectItem key={lang} value={lang} className={theme === 'dark' ? 'text-gray-100 hover:bg-gray-600' : ''}>{lang}</SelectItem>
                 ))}
               </SelectContent>
