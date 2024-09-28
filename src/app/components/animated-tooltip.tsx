@@ -1,13 +1,13 @@
-import Image from "next/image";
-import React, { useState } from "react";
+import Image from 'next/image';
+import React, { useState } from 'react';
 import {
   motion,
   useTransform,
   AnimatePresence,
   useMotionValue,
   useSpring,
-} from "framer-motion";
-import stringToColor from "../lib/stringToColor";
+} from 'framer-motion';
+import stringToColor from '../lib/stringToColor';
 
 export const AnimatedTooltip = ({
   items,
@@ -32,11 +32,15 @@ export const AnimatedTooltip = ({
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const halfWidth = event.currentTarget.offsetWidth / 2;
-    x.set(event.clientX - event.currentTarget.getBoundingClientRect().left - halfWidth);
+    x.set(
+      event.clientX -
+        event.currentTarget.getBoundingClientRect().left -
+        halfWidth
+    );
   };
 
   return (
-    <div className="flex flex-row items-center  justify-center"> 
+    <div className="flex flex-row items-center  justify-center">
       {items.map((item) => (
         <div
           className="-mr-2 relative group   cursor-pointer"
@@ -54,7 +58,7 @@ export const AnimatedTooltip = ({
                   y: 0,
                   scale: 1,
                   transition: {
-                    type: "spring",
+                    type: 'spring',
                     stiffness: 260,
                     damping: 10,
                   },
@@ -63,7 +67,7 @@ export const AnimatedTooltip = ({
                 style={{
                   translateX: translateX,
                   rotate: rotate,
-                  whiteSpace: "nowrap",
+                  whiteSpace: 'nowrap',
                   backgroundColor: stringToColor(item.name),
                 }}
                 className="absolute h-4 -top-6 left-0 translate-x-1/2 flex text-xs flex-col items-center justify-center rounded-md shadow-xl px-2 py-2 z-[9999]"

@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRoom } from '@liveblocks/react';
 import { supabase } from '../../lib/initSupabase';
 import Editor from '@/app/components/Editor';
-import "../../css/editor-custom.css"
+import '../../css/editor-custom.css';
 import { useThemeAndSidebar } from '@/app/context/ThemeContext';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 type Props = {
@@ -27,11 +27,18 @@ const NoAccessPage = () => {
   const router = useRouter();
 
   return (
-    <div className={`flex items-center justify-center h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
+    <div
+      className={`flex items-center justify-center h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}
+    >
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
-        <p className="text-xl mb-8">You dont have permission to view this room.</p>
-        <Button onClick={() => router.push('/')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <p className="text-xl mb-8">
+          You dont have permission to view this room.
+        </p>
+        <Button
+          onClick={() => router.push('/')}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
           Go to Homepage
         </Button>
       </div>
@@ -52,7 +59,7 @@ const RoomPage = ({ params }: Props) => {
       if (user?.id && user?.primaryEmailAddress?.emailAddress) {
         try {
           const { data, error } = await supabase
-            .from("Rooms")
+            .from('Rooms')
             .select('userId, Admins, Members')
             .eq('id', params.roomId)
             .single();
@@ -65,7 +72,7 @@ const RoomPage = ({ params }: Props) => {
             const isOwner = roomData.userId === user.id;
             const isAdmin = roomData.Admins.includes(userEmail);
             const isMember = roomData.Members.includes(userEmail);
-            
+
             setIsOwner(isOwner);
             setHasAccess(isOwner || isAdmin || isMember);
           } else {
@@ -85,7 +92,9 @@ const RoomPage = ({ params }: Props) => {
 
   if (isLoading) {
     return (
-      <div className={`flex items-center justify-center h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+      <div
+        className={`flex items-center justify-center h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}
+      >
         <div className="liveBlockloader"></div>
       </div>
     );
@@ -96,9 +105,9 @@ const RoomPage = ({ params }: Props) => {
   }
 
   return (
-    <div 
+    <div
       className={`flex flex-col h-screen transition-all duration-300 ease-in-out ${
-        isCollapsed ? "sm:ml-20" : "sm:ml-64"
+        isCollapsed ? 'sm:ml-20' : 'sm:ml-64'
       } ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}
     >
       <main className="flex-1 overflow-hidden">

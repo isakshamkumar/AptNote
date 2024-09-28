@@ -1,1 +1,9 @@
-export const SupportedLanguagesToTranslate = ['english', 'spanish', 'french', 'german', 'chinese', 'japanese', 'hindi'];
+export const SupportedLanguagesToTranslate = [
+  'english',
+  'spanish',
+  'french',
+  'german',
+  'chinese',
+  'japanese',
+  'hindi',
+];

@@ -1,5 +1,11 @@
-"use client"
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+'use client';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -12,9 +18,13 @@ interface ThemeAndSidebarContextType {
   toggleCollapse: () => void;
 }
 
-const ThemeAndSidebarContext = createContext<ThemeAndSidebarContextType | undefined>(undefined);
+const ThemeAndSidebarContext = createContext<
+  ThemeAndSidebarContextType | undefined
+>(undefined);
 
-export const ThemeAndSidebarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ThemeAndSidebarProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [theme, setTheme] = useState<Theme>('light');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,19 +45,28 @@ export const ThemeAndSidebarProvider: React.FC<{ children: ReactNode }> = ({ chi
   }, []);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev);
+    setIsSidebarOpen((prev) => !prev);
   };
 
   const toggleCollapse = () => {
-    setIsCollapsed(prev => !prev);
+    setIsCollapsed((prev) => !prev);
   };
 
   return (
-    <ThemeAndSidebarContext.Provider value={{ theme, toggleTheme, isSidebarOpen, toggleSidebar, isCollapsed, toggleCollapse }}>
+    <ThemeAndSidebarContext.Provider
+      value={{
+        theme,
+        toggleTheme,
+        isSidebarOpen,
+        toggleSidebar,
+        isCollapsed,
+        toggleCollapse,
+      }}
+    >
       {children}
     </ThemeAndSidebarContext.Provider>
   );
@@ -56,7 +75,9 @@ export const ThemeAndSidebarProvider: React.FC<{ children: ReactNode }> = ({ chi
 export const useThemeAndSidebar = () => {
   const context = useContext(ThemeAndSidebarContext);
   if (context === undefined) {
-    throw new Error('useThemeAndSidebar must be used within a ThemeAndSidebarProvider');
+    throw new Error(
+      'useThemeAndSidebar must be used within a ThemeAndSidebarProvider'
+    );
   }
   return context;
 };

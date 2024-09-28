@@ -1,26 +1,24 @@
-import LiveblocksProviderLayout from '@/app/components/Providers/live-block-provider'
-import RoomProviderLayout from '@/app/components/Providers/RoomProvider'
-import { ThemeAndSidebarProvider } from '@/app/context/ThemeContext'
-import React from 'react'
+import LiveblocksProviderLayout from '@/app/components/Providers/live-block-provider';
+import RoomProviderLayout from '@/app/components/Providers/RoomProvider';
+import { ThemeAndSidebarProvider } from '@/app/context/ThemeContext';
+import React from 'react';
 
 type Props = {
-    children: React.ReactNode,
-    params: {
-        roomId: string
-        }
-}
+  children: React.ReactNode;
+  params: {
+    roomId: string;
+  };
+};
 
-const layout = ({ children,params }: Props) => {
+const layout = ({ children, params }: Props) => {
   return (
     <LiveblocksProviderLayout>
-{/* <ThemeAndSidebarProvider> */}
+      {/* <ThemeAndSidebarProvider> */}
 
-   <RoomProviderLayout roomId={params.roomId} >
-    {children}
-   </RoomProviderLayout>
-{/* </ThemeAndSidebarProvider> */}
+      <RoomProviderLayout roomId={params.roomId}>{children}</RoomProviderLayout>
+      {/* </ThemeAndSidebarProvider> */}
     </LiveblocksProviderLayout>
-  )
-}
+  );
+};
 
-export default layout
+export default layout;

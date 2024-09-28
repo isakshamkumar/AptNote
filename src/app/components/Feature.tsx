@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Users, MessageSquare, Globe } from 'lucide-react';
@@ -41,9 +41,16 @@ const useCollaborativeEditing = (initialUsers: User[]) => {
           if (Math.random() > 0.8) {
             const isTyping = Math.random() > 0.5;
             if (isTyping) {
-              const position = newState.cursorPositions[user.id]?.index || Math.floor(Math.random() * newState.text.length);
-              const newChar = ' abcdefghijklmnopqrstuvwxyz'.charAt(Math.floor(Math.random() * 27));
-              newState.text = newState.text.slice(0, position) + newChar + newState.text.slice(position);
+              const position =
+                newState.cursorPositions[user.id]?.index ||
+                Math.floor(Math.random() * newState.text.length);
+              const newChar = ' abcdefghijklmnopqrstuvwxyz'.charAt(
+                Math.floor(Math.random() * 27)
+              );
+              newState.text =
+                newState.text.slice(0, position) +
+                newChar +
+                newState.text.slice(position);
               newState.cursorPositions[user.id] = {
                 ...newState.cursorPositions[user.id],
                 index: position + 1,
@@ -58,18 +65,18 @@ const useCollaborativeEditing = (initialUsers: User[]) => {
         });
         return newState;
       });
-    }, 1000);
+    }, 800);
 
     return () => clearInterval(interval);
   }, [users]);
-let dummyUserNames=["Bob","Charlie","Diana","Eva"]
+  let dummyUserNames = ['Bob', 'Charlie', 'Diana', 'Eva'];
   useEffect(() => {
     const interval = setInterval(() => {
       setUsers((prevUsers) => {
         if (prevUsers.length < 4 && Math.random() > 0.7) {
           const newUser = {
             id: `user-${Date.now()}`,
-            name: `${dummyUserNames[Math.floor(Math.random()*4)]}`,
+            name: `${dummyUserNames[Math.floor(Math.random() * 4)]}`,
             color: `hsl(${Math.random() * 360}, 70%, 50%)`,
             avatar: `https://i.pravatar.cc/150?u=user${prevUsers.length + 1}`,
           };
@@ -79,7 +86,7 @@ let dummyUserNames=["Bob","Charlie","Diana","Eva"]
         }
         return prevUsers;
       });
-    }, 3500);
+    }, 2500);
 
     return () => clearInterval(interval);
   }, []);
@@ -87,14 +94,20 @@ let dummyUserNames=["Bob","Charlie","Diana","Eva"]
   return { users, editorState, setEditorState };
 };
 
-const Cursor: React.FC<{ color: string, isBlinking: boolean }> = ({ color, isBlinking }) => (
+const Cursor: React.FC<{ color: string; isBlinking: boolean }> = ({
+  color,
+  isBlinking,
+}) => (
   <span
     className={`inline-block w-0.5 h-5 -mb-1 ${isBlinking ? 'animate-blink' : ''}`}
     style={{ backgroundColor: color }}
   />
 );
 
-const TypingIndicator: React.FC<{ name: string, color: string }> = ({ name, color }) => (
+const TypingIndicator: React.FC<{ name: string; color: string }> = ({
+  name,
+  color,
+}) => (
   <div
     className="absolute -top-6 left-0 px-2 py-1 text-xs rounded whitespace-nowrap"
     style={{ backgroundColor: color, color: 'white' }}
@@ -103,17 +116,17 @@ const TypingIndicator: React.FC<{ name: string, color: string }> = ({ name, colo
   </div>
 );
 
-const CollaborativeTextEditor: React.FC<{ 
-  users: User[], 
-  editorState: EditorState, 
-  setEditorState: React.Dispatch<React.SetStateAction<EditorState>>
+const CollaborativeTextEditor: React.FC<{
+  users: User[];
+  editorState: EditorState;
+  setEditorState: React.Dispatch<React.SetStateAction<EditorState>>;
 }> = ({ users, editorState, setEditorState }) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (editorRef.current) {
       const { width, height } = editorRef.current.getBoundingClientRect();
-      setEditorState(prevState => ({
+      setEditorState((prevState) => ({
         ...prevState,
         cursorPositions: Object.fromEntries(
           Object.entries(prevState.cursorPositions).map(([userId, pos]) => [
@@ -122,18 +135,21 @@ const CollaborativeTextEditor: React.FC<{
               ...pos,
               x: (pos.index / prevState.text.length) * width,
               y: Math.min(Math.random() * height, height - 50),
-            }
+            },
           ])
-        )
+        ),
       }));
     }
   }, [editorState.text, setEditorState]);
 
   return (
-    <div ref={editorRef} className="bg-black text-white p-4 rounded-md min-h-[200px] relative font-sans text-sm leading-6 overflow-hidden">
+    <div
+      ref={editorRef}
+      className="bg-black text-white p-4 rounded-md min-h-[200px] relative font-sans text-sm leading-6 overflow-hidden"
+    >
       {editorState.text.split('').map((char, index) => {
         const userAtPosition = users.find(
-          user => editorState.cursorPositions[user.id]?.index === index
+          (user) => editorState.cursorPositions[user.id]?.index === index
         );
         return (
           <React.Fragment key={index}>
@@ -141,7 +157,10 @@ const CollaborativeTextEditor: React.FC<{
               <span className="relative">
                 <Cursor color={userAtPosition.color} isBlinking={true} />
                 {editorState.cursorPositions[userAtPosition.id].isTyping && (
-                  <TypingIndicator name={userAtPosition.name} color={userAtPosition.color} />
+                  <TypingIndicator
+                    name={userAtPosition.name}
+                    color={userAtPosition.color}
+                  />
                 )}
               </span>
             )}
@@ -149,8 +168,11 @@ const CollaborativeTextEditor: React.FC<{
           </React.Fragment>
         );
       })}
-      {users.map(user => {
-        if (editorState.cursorPositions[user.id]?.index === editorState.text.length) {
+      {users.map((user) => {
+        if (
+          editorState.cursorPositions[user.id]?.index ===
+          editorState.text.length
+        ) {
           return (
             <span key={user.id} className="relative">
               <Cursor color={user.color} isBlinking={true} />
@@ -181,7 +203,7 @@ const CollaborativeTextEditor: React.FC<{
                   info={{
                     name: user.name,
                     email: `${user.name.toLowerCase()}@example.com`,
-                    avatar: user.avatar
+                    avatar: user.avatar,
                   }}
                 />
               </motion.div>
@@ -196,33 +218,53 @@ const CollaborativeTextEditor: React.FC<{
 
 const EnhancedFeatureDemo: React.FC = () => {
   const initialUsers: User[] = [
-    { id: 'user-1', name: 'Alice', color: 'hsl(0, 70%, 50%)', avatar: 'https://i.pravatar.cc/150?u=alice' },
+    {
+      id: 'user-1',
+      name: 'Alice',
+      color: 'hsl(0, 70%, 50%)',
+      avatar: 'https://i.pravatar.cc/150?u=alice',
+    },
   ];
-  const { users, editorState, setEditorState } = useCollaborativeEditing(initialUsers);
+  const { users, editorState, setEditorState } =
+    useCollaborativeEditing(initialUsers);
 
-  const tooltipItems = users.filter(user => editorState.cursorPositions[user.id]).map((user, index) => ({
-    id: index + 1,
-    name: user.name,
-    image: user.avatar,
-  }));
+  const tooltipItems = users
+    .filter((user) => editorState.cursorPositions[user.id])
+    .map((user, index) => ({
+      id: index + 1,
+      name: user.name,
+      image: user.avatar,
+    }));
 
   return (
-    <div id="feature" className="max-w-4xl mx-auto mt-10 bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
+    <div
+      id="feature"
+      className="max-w-4xl mx-auto mt-10 bg-gray-900 rounded-lg overflow-hidden shadow-2xl"
+    >
       <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
         <div className="flex space-x-2">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">AI Features</button>
-          <button className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors">Manage Access</button>
+          <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+            AI Features
+          </button>
+          <button className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors">
+            Manage Access
+          </button>
         </div>
         <div className="flex space-x-2 items-center">
-          <div className='mr-2'>
-
-          <AnimatedTooltip items={tooltipItems} />
+          <div className="mr-2">
+            <AnimatedTooltip items={tooltipItems} />
           </div>
-          <button className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors">Share</button>
+          <button className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors">
+            Share
+          </button>
         </div>
       </div>
       <div className="relative p-6 bg-gray-800">
-        <CollaborativeTextEditor users={users} editorState={editorState} setEditorState={setEditorState} />
+        <CollaborativeTextEditor
+          users={users}
+          editorState={editorState}
+          setEditorState={setEditorState}
+        />
       </div>
       <div className="p-4 bg-gray-800">
         <h2 className="text-xl font-bold text-white mb-4">Key Features</h2>
@@ -259,7 +301,11 @@ interface FeatureCardProps {
   description: string;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  icon,
+  title,
+  description,
+}) => {
   return (
     <div className="bg-gray-700 rounded-xl p-4 hover:bg-gray-600 transition-colors">
       <div className="flex items-center mb-2">

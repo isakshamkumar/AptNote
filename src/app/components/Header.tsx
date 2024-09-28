@@ -1,7 +1,12 @@
-"use client";
+'use client';
 import { Menu, Search, Sun, Moon } from 'lucide-react';
 import React, { useEffect, useState, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { SignedIn, UserButton, useUser } from '@clerk/nextjs';
 import { useThemeAndSidebar } from '../context/ThemeContext';
@@ -10,14 +15,14 @@ import { supabase } from '../lib/initSupabase';
 import debounce from 'lodash/debounce';
 import { useRouter } from 'next/navigation';
 
-type Props = {}
+type Props = {};
 
 type Room = {
   id: string;
   Name: string | null;
   Description: string | null;
   userId: string;
-}
+};
 
 const Header = ({}: Props) => {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -37,7 +42,9 @@ const Header = ({}: Props) => {
         .from('Rooms')
         .select('id, Name, Description, userId')
         .or(`Name.ilike.%${term}%,Description.ilike.%${term}%`)
-        .or(`userId.eq.${user.id},Members.cs.{${userEmail}},Admins.cs.{${userEmail}}`)
+        .or(
+          `userId.eq.${user.id},Members.cs.{${userEmail}},Admins.cs.{${userEmail}}`
+        )
         .order('Name');
 
       if (error) {
@@ -68,16 +75,25 @@ const Header = ({}: Props) => {
   const highlightMatch = (text: string, term: string) => {
     if (!term.trim()) return text;
     const regex = new RegExp(`(${term})`, 'gi');
-    return text.split(regex).map((part, index) => 
-      regex.test(part) ? <mark key={index} className="bg-yellow-200 dark:bg-yellow-700">{part}</mark> : part
+    return text.split(regex).map((part, index) =>
+      regex.test(part) ? (
+        <mark key={index} className="bg-yellow-200 dark:bg-yellow-700">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
     );
   };
 
   return (
-    <header 
+    <header
       className={`shadow-sm py-4 px-6 transition-all duration-300 ease-in-out overflow-x-hidden
         ${theme === 'light' ? 'bg-white text-gray-700' : 'bg-gray-800 text-gray-200'}`}
-      style={{ width: `calc(100vw - ${isCollapsed ? '96.5px' : '273px'})`, marginLeft: `${isCollapsed ? '80px' : '256px'}` }}
+      style={{
+        width: `calc(100vw - ${isCollapsed ? '96.5px' : '273px'})`,
+        marginLeft: `${isCollapsed ? '80px' : '256px'}`,
+      }}
     >
       <div className="flex justify-between items-center">
         <div />
@@ -85,15 +101,19 @@ const Header = ({}: Props) => {
           <SignedIn>
             <UserButton />
           </SignedIn>
-          <button 
+          <button
             onClick={() => setSearchOpen(true)}
             className={`flex items-center px-3 py-2 rounded-md 
               ${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'}`}
           >
             <Search className="w-4 h-4 mr-2" />
             <span>Search</span>
-            <kbd className={`ml-2 px-1.5 py-0.5 text-xs rounded 
-              ${theme === 'light' ? 'bg-gray-300' : 'bg-gray-600'}`}>⌘K</kbd>
+            <kbd
+              className={`ml-2 px-1.5 py-0.5 text-xs rounded 
+              ${theme === 'light' ? 'bg-gray-300' : 'bg-gray-600'}`}
+            >
+              ⌘K
+            </kbd>
           </button>
           <div className="flex items-center">
             <Switch
@@ -111,52 +131,59 @@ const Header = ({}: Props) => {
       </div>
 
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-  <DialogContent 
-    className={`sm:max-w-[600px] w-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} p-4`}
-  >
-    <DialogHeader>
-      <DialogTitle>Search Rooms</DialogTitle>
-    </DialogHeader>
-    <div className="grid gap-4 py-4">
-      <Input
-        placeholder="Type room name..."
-        className={`col-span-3 w-full ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700 text-white'}`}
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <div className={`max-h-60 overflow-y-auto w-full ${theme === 'light' ? 'bg-white' : 'bg-gray-700'} rounded-md`}>
-        {searchResults.map((room) => (
-          <div 
-            key={room.id} 
-            className={`p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer w-full ${
-              theme === 'light' ? 'border-b border-gray-200' : 'border-b border-gray-600'
-            }`}
-            onClick={() => {
-              router.push(`/rooms/${room.id}`);
-              setSearchOpen(false);
-            }}
-          >
-            <h3 className="font-semibold">{highlightMatch(room.Name ?? '', searchTerm)}</h3>
-            {room.Description && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {highlightMatch(room.Description, searchTerm)}
-              </p>
-            )}
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {room.userId === user?.id ? "Owner" : "Member"}
-            </p>
+        <DialogContent
+          className={`sm:max-w-[600px] w-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} p-4`}
+        >
+          <DialogHeader>
+            <DialogTitle>Search Rooms</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              placeholder="Type room name..."
+              className={`col-span-3 w-full ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700 text-white'}`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div
+              className={`max-h-60 overflow-y-auto w-full ${theme === 'light' ? 'bg-white' : 'bg-gray-700'} rounded-md`}
+            >
+              {searchResults.map((room) => (
+                <div
+                  key={room.id}
+                  className={`p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer w-full ${
+                    theme === 'light'
+                      ? 'border-b border-gray-200'
+                      : 'border-b border-gray-600'
+                  }`}
+                  onClick={() => {
+                    router.push(`/rooms/${room.id}`);
+                    setSearchOpen(false);
+                  }}
+                >
+                  <h3 className="font-semibold">
+                    {highlightMatch(room.Name ?? '', searchTerm)}
+                  </h3>
+                  {room.Description && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {highlightMatch(room.Description, searchTerm)}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    {room.userId === user?.id ? 'Owner' : 'Member'}
+                  </p>
+                </div>
+              ))}
+              {searchResults.length === 0 && searchTerm.trim() !== '' && (
+                <p className="p-2 text-gray-500 dark:text-gray-400">
+                  No results found
+                </p>
+              )}
+            </div>
           </div>
-        ))}
-        {searchResults.length === 0 && searchTerm.trim() !== '' && (
-          <p className="p-2 text-gray-500 dark:text-gray-400">No results found</p>
-        )}
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
-
+        </DialogContent>
+      </Dialog>
     </header>
   );
-}
+};
 
 export default Header;
